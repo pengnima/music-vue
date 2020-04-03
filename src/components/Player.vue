@@ -3,15 +3,23 @@
     <div class="player_disk">
       <disk />
     </div>
-    <div class="player_control"></div>
-    <div class="player_progress"></div>
+    <div class="player_control">
+      <control />
+    </div>
+    <div class="player_progress">
+      <progress-bar></progress-bar>
+    </div>
   </div>
 </template>
 <script>
 import Disk from "./Disk";
+import Control from "./Control";
+import ProgressBar from "./ProgressBar";
 export default {
   components: {
-    Disk
+    Disk,
+    Control,
+    ProgressBar
   }
 };
 </script>
@@ -37,8 +45,15 @@ export default {
 }
 .player_control {
   flex: 2;
+  padding: 2.4vw 0;
+  padding-right: 2.4vw;
 }
 .player_progress {
   position: absolute;
+
+  left: 1.8vw;
+  right: 1.8vw;
+  top: 0;
+  bottom: 5vw;
 }
 </style>

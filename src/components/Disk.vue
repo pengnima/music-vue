@@ -9,30 +9,83 @@
         backgroundImage: coverUrl ? `url(${coverUrl})` : ''
       }"
     ></label>
-    <input
-      id="file"
-      type="file"
-      ref="file"
-      accept=".mp3"
-      multiple
-      @change="handleChange"
-    />
+    <input id="file" type="file" ref="file" accept=".mp3" multiple @change="handleChange" />
   </div>
 </template>
 
 <script>
-// import { mapState } from "";
+import { mapState, mapMutations } from "vuex"; //mapState 是便于书写 状态
+import { player } from "../player"; // player 播放器
+
 export default {
+  mounted() {
+    player.onPlay.listen(() => {
+      this.togglePlay(true);
+    });
+    player.onPause.listen(() => {
+      this.togglePlay(false);
+    });
+    player.onChange.listen(() => {
+      this.changeCover();
+    });
+    player.onReady.listen(() => {
+      this.changeCover();
+    });
+  },
   data() {
     return {
-      isPlaying: false,
-      coverUrl: "",
       stopMatrix: ""
     };
   },
   methods: {
-    handleChange() {
-      console.log("change？？");
+    ...mapMutations(["togglePlay", "changeCover"]),
+    async handleChange() {
+      // this.$refs.file 是 input，type=file，其属性files保存了选的音乐
+      const target = this.$refs.file;
+      const files = target.files || [];
+      console.log(target.value);
+      console.log(files);
+
+      if (files.length) {
+        for (let i = 0; i < files.length; ++i) {
+          await player.append(files[i]); //将音乐添加到 播放器中
+        }
+      }
+      target.value = "";
+    }
+  },
+  computed: {
+    // 播放 和 图片url都通过 vuex 管理
+    ...mapState(["isPlaying", "coverUrl"])
+  },
+  watch: {
+    isPlaying(val) {
+      if (!val) {
+        this.stopMatrix = getComputedStyle(this.$refs.cover).transform;
+      } else {
+        const matrix = this.stopMatrix;
+        this.stopMatrix = "";
+
+        const match = matrix.match(/^matrix\(([^,]+),([^,]+)/); // 匹配例子： matrix(a,b)
+        const [, sin, cos] = match || [0, 0, 0]; // [,sin,cos] 第一个为空，那为什么要有第一个？
+        const deg = ((Math.atan2(cos, sin) / 2 / Math.PI) * 360) % 360; // atan2(cos, sin) 返回从 x 轴到点 (sin,cos) 之间的角度
+
+        const styles = document.styleSheets;
+        styles.forEach(style => {
+          const rules = [...style.cssRules];
+          rules.forEach(rule => {
+            // KEYFRAMES_RULE 是 type 7
+            if (
+              rule.type === rule.KEYFRAMES_RULE &&
+              rule.name === "rotateAnima"
+            ) {
+              rule.cssRules[0].style.transform = `rotate3d(0, 0, 1, ${deg}deg)`;
+              rule.cssRules[1].style.transform = `rotate3d(0, 0, 1, ${deg +
+                360}deg)`;
+            }
+          });
+        });
+      }
     }
   }
 };

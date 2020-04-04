@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import { player } from "../player";
 export default {
   computed: {
@@ -38,7 +38,8 @@ export default {
       if (this.isPlaying) {
         player.next();
       }
-    }
+    },
+    ...mapMutations(["togglePlay"])
   }
 };
 </script>
@@ -57,6 +58,13 @@ export default {
   color: #aaa;
   font-size: 16px;
   border-radius: 4px;
+  width: 30px;
+  height: 30px;
+
+  /* 为了让control_btn里的 字体图标 居中对齐 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .control_btn:hover {
   background-color: #aaa;
@@ -70,8 +78,6 @@ export default {
   display: inline-block;
   position: relative;
 
-  left: 3px;
-  top: 2px;
   width: 20px;
   height: 20px;
 }

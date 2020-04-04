@@ -23,7 +23,7 @@ export default {
       this.name = player.current.file ? player.current.file.name : "";
     };
 
-    // draw();
+    draw();
   },
   data() {
     return {
@@ -51,14 +51,13 @@ export default {
 
 <style>
 .progress {
-  padding-left: 20vw;
-  padding-right: 2.4vw;
-  /* max-width: 250px;
-  width: 60vw; */
+  padding-left: 40%;
+  padding-right: 5%;
+  width: 100%;
   height: 100%;
 
-  border-radius: 6px 6px 0 0;
-  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px 8px 0 0;
+  background-color: rgba(210, 210, 210, 0.8);
   transition: all 0.6s ease;
 }
 
@@ -67,7 +66,7 @@ export default {
 }
 .progress_title {
   padding-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
 
   white-space: nowrap;
@@ -76,11 +75,10 @@ export default {
 }
 .progress_text {
   padding-top: 2px;
-  padding-left: 2px;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: bold;
   color: #aaa;
-  transform: scale(0.6);
+  transform: scale(0.8);
   transform-origin: left top;
 }
 
@@ -88,11 +86,12 @@ export default {
   height: 3px;
   border-radius: 3px;
   overflow: hidden;
-  background-color: #ddd;
+  background-color: #fff;
 }
 .progress_line span {
   display: block;
   height: 100%;
+  /* width: 60%; */
   background-color: #ec51a5;
 }
 </style>

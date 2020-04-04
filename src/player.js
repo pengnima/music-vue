@@ -1,19 +1,26 @@
-// 监听者模式
-
+// Dispatcher 里的 handlers存放着 函数
+/**
+ * handler 实际为一个 箭头函数
+   () => {
+      this.togglePlay(true);
+    }
+ */
 class Dispatcher {
   constructor() {
     this.handlers = [];
   }
 
-  // 监听对象
+  // 监听 函数
   listen(h) {
     this.handlers.push(h);
   }
 
-  // 让每个对象发送...args
+  // handler是函数，实际无需 args，本脚本里 args实参为 player实例对象
   emit(...args) {
     this.handlers.forEach(handler => {
-      handler(...args);
+      // handler(...args);
+      handler();
+      console.log(handler);
     });
   }
 }
@@ -39,20 +46,112 @@ class Player {
     this.onReady = new Dispatcher();
   }
 
-  async readAudioBuffer(file) {}
+  async readAudioBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async evt => {
+        this.audioContext
+          .decodeAudioData(evt.target.result)
+          .then(resolve, reject);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
-  async append(file) {}
-  play() {}
-  pause() {}
-  stop() {}
-  next() {}
-  prev() {}
+  async append(file) {
+    const isEmpty = this.isEmpty;
+    this.playList.push({
+      file,
+      offset: 0,
+      start: null,
+      source: null,
+      buffer: await this.readAudioBuffer(file)
+    });
+    if (isEmpty) {
+      this.onReady.emit(this);
+    }
+  }
+  play() {
+    if (!this.playList.length || this.current.source) {
+      return;
+    }
+    const source = this.audioContext.createBufferSource();
+    source.buffer = this.current.buffer;
+    source.onended = this.next.bind(this);
+    source.connect(this.audioContext.destination);
+    source.start(0, this.current.offset);
+    this.current.source = source;
+    this.current.start = this.audioContext.currentTime;
 
-  get isEmpty() {}
-  get current() {}
-  get position() {}
-  set position(val) {}
-  get duration() {}
+    this.onPlay.emit(this);
+  }
+  pause() {
+    if (!this.playList.length || !this.current.source) {
+      return;
+    }
+    this.current.source.stop(0);
+    this.current.source.disconnect(0);
+    this.current.source.onended = null;
+    this.current.source = null;
+    this.current.offset = this.position;
+    this.current.start = null;
+
+    this.onPause.emit(this);
+  }
+  stop() {
+    this.pause();
+    this.current.offset = 0;
+    this.current.start = null;
+  }
+  next() {
+    this.stop();
+    this.playIndex++;
+    if (this.playIndex >= this.playList.length) {
+      this.playIndex = 0;
+    }
+    this.play();
+    this.onChange.emit(this);
+  }
+  prev() {
+    this.stop();
+    this.playIndex--;
+    if (this.playIndex < 0) {
+      this.playIndex = Math.max(this.playList.length - 1, 0);
+    }
+    this.play();
+    this.onChange.emit(this);
+  }
+
+  get isEmpty() {
+    return this.current === this.emptyNode;
+  }
+  get current() {
+    return this.playList[this.playIndex] || this.emptyNode;
+  }
+  get position() {
+    if (!this.playList.length) {
+      return 0;
+    }
+    return (
+      this.current.offset +
+      (this.current.start !== null
+        ? this.audioContext.currentTime - this.current.start
+        : 0)
+    );
+  }
+  set position(val) {
+    if (!this.playList.length) {
+      return;
+    }
+    this.stop();
+    this.current.offset = val;
+    this.current.start = null;
+    this.play();
+  }
+  get duration() {
+    return this.current.buffer ? this.current.buffer.duration : 0.001;
+  }
 }
 
 export const player = new Player();

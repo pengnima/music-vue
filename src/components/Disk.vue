@@ -16,9 +16,11 @@
 <script>
 import { mapState, mapMutations } from "vuex"; //mapState 是便于书写 状态
 import { player } from "../player"; // player 播放器
+import { isNullOrUndefined } from "util";
 
 export default {
   mounted() {
+    // 给 播放器实例 添加事件监听，togglePlay为播放/暂停  changeCover为切换图片地址
     player.onPlay.listen(() => {
       this.togglePlay(true);
     });
@@ -43,8 +45,8 @@ export default {
       // this.$refs.file 是 input，type=file，其属性files保存了选的音乐
       const target = this.$refs.file;
       const files = target.files || [];
-      console.log(target.value);
-      console.log(files);
+      // console.log(target.value);
+      // console.log(files);
 
       if (files.length) {
         for (let i = 0; i < files.length; ++i) {
@@ -70,20 +72,26 @@ export default {
         const [, sin, cos] = match || [0, 0, 0]; // [,sin,cos] 第一个为空，那为什么要有第一个？
         const deg = ((Math.atan2(cos, sin) / 2 / Math.PI) * 360) % 360; // atan2(cos, sin) 返回从 x 轴到点 (sin,cos) 之间的角度
 
-        const styles = document.styleSheets;
+        const styles = [...document.styleSheets]; //document.styleSheets是 StyleSheetList 类型
+
         styles.forEach(style => {
-          const rules = [...style.cssRules];
-          rules.forEach(rule => {
-            // KEYFRAMES_RULE 是 type 7
-            if (
-              rule.type === rule.KEYFRAMES_RULE &&
-              rule.name === "rotateAnima"
-            ) {
-              rule.cssRules[0].style.transform = `rotate3d(0, 0, 1, ${deg}deg)`;
-              rule.cssRules[1].style.transform = `rotate3d(0, 0, 1, ${deg +
-                360}deg)`;
-            }
-          });
+          try {
+            const rules = [...style.cssRules];
+            rules.forEach(rule => {
+              // KEYFRAMES_RULE 是 type 7
+              if (
+                rule.type === rule.KEYFRAMES_RULE &&
+                rule.name === "rotateAnima"
+              ) {
+                rule.cssRules[0].style.transform = `rotate3d(0, 0, 1, ${deg}deg)`;
+                rule.cssRules[1].style.transform = `rotate3d(0, 0, 1, ${deg +
+                  360}deg)`;
+              }
+              console.log("没出错");
+            });
+          } catch (error) {
+            console.log("出错了");
+          }
         });
       }
     }
@@ -139,7 +147,7 @@ export default {
 }
 .disk__playing {
   transform: translateY(-60%);
-  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.4),
+  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.3),
     0 10px 25px rgba(11, 207, 241, 0.8);
 }
 .disk__playing .disk_cover {

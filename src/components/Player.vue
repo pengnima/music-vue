@@ -41,25 +41,17 @@ export default {
 }
 .player_disk {
   flex: 1.2;
-  /* padding: 2.4vw; */
 }
 .player_control {
   flex: 2;
-  /* padding: 2.4vw 0;
-  padding-right: 2.4vw; */
 }
 .player_progress {
   position: absolute;
 
   width: 90%;
   height: 80%;
-  top: -80%;
+  top: -10%;
   left: 5%;
   z-index: -1;
-  /* 
-  left: 1.8vw;
-  right: 1.8vw;
-  top: 0;
-  bottom: 5vw; */
 }
 </style>

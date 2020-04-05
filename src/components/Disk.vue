@@ -21,16 +21,16 @@ import { isNullOrUndefined } from "util";
 export default {
   mounted() {
     // 给 播放器实例 添加事件监听，togglePlay为播放/暂停  changeCover为切换图片地址
-    player.onPlay.listen(() => {
+    player.onPlay.push(() => {
       this.togglePlay(true);
     });
-    player.onPause.listen(() => {
+    player.onPause.push(() => {
       this.togglePlay(false);
     });
-    player.onChange.listen(() => {
+    player.onChange.push(() => {
       this.changeCover();
     });
-    player.onReady.listen(() => {
+    player.onReady.push(() => {
       this.changeCover();
     });
   },
@@ -45,8 +45,6 @@ export default {
       // this.$refs.file 是 input，type=file，其属性files保存了选的音乐
       const target = this.$refs.file;
       const files = target.files || [];
-      // console.log(target.value);
-      // console.log(files);
 
       if (files.length) {
         for (let i = 0; i < files.length; ++i) {
@@ -63,36 +61,36 @@ export default {
   watch: {
     isPlaying(val) {
       if (!val) {
+        // 为 false 时，触发下面
         this.stopMatrix = getComputedStyle(this.$refs.cover).transform;
       } else {
-        const matrix = this.stopMatrix;
-        this.stopMatrix = "";
+        //为 true 时
+        if (this.stopMatrix != "") {
+          const matrix = this.stopMatrix;
+          this.stopMatrix = "";
+          const match = matrix.match(/^matrix\(([^,]+),([^,]+)/);
+          let deg = ((Math.atan2(match[2], match[1]) / Math.PI) * 180) % 360;
 
-        const match = matrix.match(/^matrix\(([^,]+),([^,]+)/); // 匹配例子： matrix(a,b)
-        const [, sin, cos] = match || [0, 0, 0]; // [,sin,cos] 第一个为空，那为什么要有第一个？
-        const deg = ((Math.atan2(cos, sin) / 2 / Math.PI) * 360) % 360; // atan2(cos, sin) 返回从 x 轴到点 (sin,cos) 之间的角度
-
-        const styles = [...document.styleSheets]; //document.styleSheets是 StyleSheetList 类型
-
-        styles.forEach(style => {
-          try {
-            const rules = [...style.cssRules];
-            rules.forEach(rule => {
-              // KEYFRAMES_RULE 是 type 7
-              if (
-                rule.type === rule.KEYFRAMES_RULE &&
-                rule.name === "rotateAnima"
-              ) {
-                rule.cssRules[0].style.transform = `rotate3d(0, 0, 1, ${deg}deg)`;
-                rule.cssRules[1].style.transform = `rotate3d(0, 0, 1, ${deg +
-                  360}deg)`;
-              }
-              console.log("没出错");
-            });
-          } catch (error) {
-            console.log("出错了");
-          }
-        });
+          const styles = [...document.styleSheets]; //document.styleSheets是 StyleSheetList 类型
+          // 因为要改的是 keyframs里的样式，所以从全部的样式中去寻找
+          styles.forEach(style => {
+            try {
+              const rules = [...style.cssRules];
+              rules.forEach(rule => {
+                // KEYFRAMES_RULE 是 type 7
+                if (
+                  rule.type === rule.KEYFRAMES_RULE &&
+                  rule.name.indexOf("rotateAnima") != -1
+                ) {
+                  rule.cssRules[0].style.transform = `rotate(${deg}deg)`;
+                  rule.cssRules[1].style.transform = `rotate(${deg + 360}deg)`;
+                }
+              });
+            } catch (error) {
+              // styles[0]没有cssRules，所以会报错， DOMException: Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules
+            }
+          });
+        }
       }
     }
   }
@@ -121,7 +119,6 @@ export default {
 }
 .disk_cover {
   position: absolute;
-
   /**
   * 4个0 拉伸
    */
@@ -154,11 +151,11 @@ export default {
   animation: rotateAnima 6s infinite linear;
 }
 @keyframes rotateAnima {
-  0% {
-    transform: rotate3d(0, 0, 1, 0deg);
+  from {
+    transform: rotate(0);
   }
-  100% {
-    transform: rotate3d(0, 0, 1, 360deg);
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

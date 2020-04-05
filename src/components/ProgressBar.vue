@@ -14,8 +14,8 @@ import { player } from "../player";
 export default {
   mounted() {
     const draw = () => {
-      // requestAnimationFrame 啥意思？？
-      requestAnimationFrame(draw);
+      // requestAnimationFrame 类似 setInterval，用来做循环正合适，因为此方法会跟随屏幕刷新率执行
+      window.requestAnimationFrame(draw);
       const progress = player.position / player.duration;
       this.progress = `${(progress * 100).toFixed(2)}%`;
       this.position = player.position;
@@ -28,18 +28,20 @@ export default {
   data() {
     return {
       name: "",
-      position: 0,
-      duration: 0.001,
-      progress: ""
+      position: 0, //当前所处位置
+      duration: 0.001, //时长
+      progress: "" //控制进度条长度的，利用 样式 width: %
     };
   },
   computed: {
     ...mapState(["isPlaying"])
   },
   filters: {
+    // 格式化名字
     formatName(val) {
       return val.replace(/\.mp3$/, "");
     },
+    //格式化时间
     formatTime(val) {
       const min = Math.floor(val / 60);
       const sec = Math.floor(val % 60);
@@ -62,7 +64,7 @@ export default {
 }
 
 .progress__playing {
-  transform: translateY(-100%);
+  transform: translateY(-90%);
 }
 .progress_title {
   padding-top: 6px;

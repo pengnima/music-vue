@@ -20,6 +20,7 @@ export default {
     ...mapState(["isPlaying"])
   },
   methods: {
+    ...mapMutations(["togglePlay"]),
     handlePrev() {
       if (this.isPlaying) {
         player.prev();
@@ -38,8 +39,7 @@ export default {
       if (this.isPlaying) {
         player.next();
       }
-    },
-    ...mapMutations(["togglePlay"])
+    }
   }
 };
 </script>
@@ -58,8 +58,8 @@ export default {
   color: #aaa;
   font-size: 16px;
   border-radius: 4px;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
 
   /* 为了让control_btn里的 字体图标 居中对齐 */
   display: flex;
@@ -77,6 +77,7 @@ export default {
 .play-btn {
   display: inline-block;
   position: relative;
+  left: 2px;
 
   width: 20px;
   height: 20px;
@@ -84,7 +85,6 @@ export default {
 .play-btn::before {
   content: "";
   position: absolute;
-  /* left: 5px; */
 
   width: 0;
   height: 0;

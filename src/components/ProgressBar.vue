@@ -2,7 +2,7 @@
   <div class="progress" :class="{progress__playing:isPlaying}">
     <h2 class="progress_title">{{ name | formatName}}</h2>
     <p class="progress_text">{{position | formatTime}}/ {{duration|formatTime}}</p>
-    <div class="progress_line">
+    <div class="progress_line" @click="setPos" ref="line">
       <span :style="{width: progress}" />
     </div>
   </div>
@@ -12,6 +12,15 @@
 import { mapState } from "vuex";
 import { player } from "../player";
 export default {
+  methods: {
+    setPos(ev) {
+      // ev.offsetX 值为Number，是这条progress_line的 某一处位置
+      // 获取 整条line的宽度，再相除，把得到的 百分比，给player.position，让其根据该比率，*自己的曲目长度
+      let lineHeight = parseFloat(getComputedStyle(this.$refs.line).width);
+      let rate = ev.offsetX / lineHeight;
+      player.position = rate;
+    }
+  },
   mounted() {
     const draw = () => {
       // requestAnimationFrame 类似 setInterval，用来做循环正合适，因为此方法会跟随屏幕刷新率执行
@@ -21,6 +30,7 @@ export default {
       this.position = player.position;
       this.duration = player.duration;
       this.name = player.current.file ? player.current.file.name : "";
+      // console.log(this.position);
     };
 
     draw();
@@ -85,8 +95,8 @@ export default {
 }
 
 .progress_line {
-  height: 3px;
-  border-radius: 3px;
+  height: 6px;
+  border-radius: 6px;
   overflow: hidden;
   background-color: #fff;
 }

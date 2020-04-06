@@ -15,6 +15,14 @@ class Dispatcher {
 class Player {
   constructor() {
     this.audioCtx = new AudioContext(); // 音频上下文
+    this.analyser = this.audioCtx.createAnalyser(); //分析器
+    this.analyser.fftSize = 128;
+    this.utfArray = new Uint8Array(this.analyser.frequencyBinCount); //utf8数组(长度 64)
+    this.tempArr = []; //临时数组，用来存放前一段 utf8的数组，暂停时可以利用改数组做 canvas递减
+    this.rectMargin = 0; // 方条间隙
+    this.rectWidth = 0; // 绘制的方条宽度
+    this.heightRate = 0; // 方条高度的比率
+
     this.playList = []; // 曲目列表
     this.playIndex = 0; // 当前播放曲目下标
 
@@ -38,6 +46,41 @@ class Player {
   /**
    * 功能方法 =============================================================================================
    */
+  //修正canvas参数
+  amendData(cWidth, cHeight) {
+    this.rectMargin = Math.floor(cWidth / this.analyser.frequencyBinCount) + 2; //+ 2是由于utf8数组里后面很多都是0，那干脆挤掉算了
+    this.rectWidth = this.rectMargin - 1;
+    this.heightRate = Math.floor((cHeight / 256) * 100) / 100;
+  }
+  // 画canvas
+  drawCanvas(cHeight, ctx, isPlaying) {
+    this.analyser.getByteFrequencyData(this.utfArray);
+    // 正在播放时，每次将uft存入 临时数组里
+    if (isPlaying) {
+      this.tempArr = this.utfArray;
+      this.utfArray.forEach((value, index) => {
+        ctx.fillRect(
+          10 + index * this.rectMargin,
+          cHeight - value * this.heightRate,
+          this.rectWidth,
+          value * this.heightRate
+        );
+      });
+    } else {
+      // 暂停时，利用 临时数组递减来做方条下坠
+      this.tempArr.forEach((value, index) => {
+        if (value-- > 0) {
+          ctx.fillRect(
+            10 + index * this.rectMargin,
+            cHeight - value * this.heightRate,
+            this.rectWidth,
+            value * this.heightRate
+          );
+          this.tempArr[index] = value;
+        }
+      });
+    }
+  }
 
   // 读取文件的 audioBuffer
   async getBuffer(file) {
@@ -62,8 +105,6 @@ class Player {
      如果不为空，那么就不用换图片
     */
     const isEmpty = this.isEmpty;
-
-    console.log(this.isEmpty);
     this.playList.push({
       file,
       offset: 0,
@@ -104,9 +145,12 @@ class Player {
     source.onended = () => {
       this.next();
     };
-    source.connect(this.audioCtx.destination);
-    source.start(0, this.current.offset);
+    //先连接上分析器
+    source.connect(this.analyser);
+    //分析器在连接目的地
+    this.analyser.connect(this.audioCtx.destination);
 
+    source.start(0, this.current.offset);
     this.current.source = source;
     this.current.start = this.audioCtx.currentTime; //记录曲目开始时间，暂停时再用 currentTime - offset
 
@@ -191,7 +235,15 @@ class Player {
   }
 
   // 曲目位置可以设置
-  set position(val) {}
+  set position(rate) {
+    if (!this.playList.length) {
+      return;
+    }
+    let val = rate * this.duration;
+    this.pause();
+    this.current.offset = val;
+    this.play();
+  }
 }
 
 export const player = new Player();

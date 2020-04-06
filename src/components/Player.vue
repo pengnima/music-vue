@@ -1,29 +1,38 @@
 <template>
-  <div class="player">
-    <div class="player_disk">
-      <disk />
+  <div id="player">
+    <div class="player">
+      <div class="player_disk">
+        <disk />
+      </div>
+      <div class="player_control">
+        <control />
+      </div>
+      <div class="player_progress">
+        <progress-bar />
+      </div>
     </div>
-    <div class="player_control">
-      <control />
-    </div>
-    <div class="player_progress">
-      <progress-bar />
-    </div>
+    <my-canvas></my-canvas>
   </div>
 </template>
 <script>
 import Disk from "./Disk";
 import Control from "./Control";
 import ProgressBar from "./ProgressBar";
+import MyCanvas from "./MyCanvas";
 export default {
   components: {
     Disk,
     Control,
-    ProgressBar
+    ProgressBar,
+    MyCanvas
   }
 };
 </script>
 <style scoped>
+#player {
+  display: flex;
+  flex-direction: column;
+}
 .player {
   display: flex;
   position: relative;

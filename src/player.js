@@ -48,7 +48,7 @@ class Player {
    */
   //修正canvas参数
   amendData(cWidth, cHeight) {
-    this.rectMargin = Math.floor(cWidth / this.analyser.frequencyBinCount) + 2; //+ 2是由于utf8数组里后面很多都是0，那干脆挤掉算了
+    this.rectMargin = Math.floor(cWidth / this.analyser.frequencyBinCount) + 1; //+ 2是由于utf8数组里后面很多都是0，那干脆挤掉算了
     this.rectWidth = this.rectMargin - 1;
     this.heightRate = Math.floor((cHeight / 256) * 100) / 100;
   }

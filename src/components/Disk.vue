@@ -9,7 +9,7 @@
         backgroundImage: coverUrl ? `url(${coverUrl})` : ''
       }"
     ></label>
-    <input id="file" type="file" ref="file" accept=".mp3" multiple @change="handleChange" />
+    <input id="file" type="file" ref="file" accept="music/mp3" multiple @change="handleChange" />
   </div>
 </template>
 

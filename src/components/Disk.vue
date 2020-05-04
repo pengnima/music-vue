@@ -16,7 +16,6 @@
 <script>
 import { mapState, mapMutations } from "vuex"; //mapState 是便于书写 状态
 import { player } from "../player"; // player 播放器
-import { isNullOrUndefined } from "util";
 
 export default {
   mounted() {
@@ -52,6 +51,9 @@ export default {
         }
       }
       target.value = "";
+    },
+    musicLoad(e) {
+      console.log(e);
     }
   },
   computed: {
